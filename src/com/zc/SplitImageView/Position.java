@@ -12,6 +12,11 @@ public class Position {
 
     private RectF mRect;  //矩形
 
+    public Position() {
+        mPoint = new Point();
+        mRect = new RectF();
+    }
+
     private boolean selected; //是否被点击
 
     public boolean isSelected() {
@@ -28,5 +33,13 @@ public class Position {
 
     public RectF getmRect() {
         return mRect;
+    }
+
+    public void setmPoint(Point mPoint) {
+        this.mPoint = mPoint;
+    }
+
+    public void setmRect(RectF mRect) {
+        this.mRect = mRect;
     }
 }

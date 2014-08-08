@@ -4,8 +4,12 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 8/8/14  1:20 PM
@@ -21,6 +25,7 @@ public class SplitImageView extends ImageView {
     private Paint mPaint;
     private float mWidthStep;//每列宽度
     private float mHeightStep;//每行高度
+    private List<Position> positions;
 
     private boolean mEnableMultiSelect ;
 
@@ -46,6 +51,7 @@ public class SplitImageView extends ImageView {
         mPaint.setTextSize(100);
         mPaint.setStrokeWidth(10);
         mPaint.setStyle(Paint.Style.STROKE);
+        positions = new ArrayList<Position>();
 
     }
 
@@ -69,6 +75,9 @@ public class SplitImageView extends ImageView {
             for(int column =0 ; column < columns; column++){
 
                 //得到坐标
+
+                Position position = new Position();
+                Point point = new Point(row,column);
 
 
             }
