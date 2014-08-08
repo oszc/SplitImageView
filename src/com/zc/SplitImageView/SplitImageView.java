@@ -1,11 +1,11 @@
 package com.zc.SplitImageView;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Point;
+import android.graphics.*;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.List;
  * 点击后显示区块
  * 可单选 可多选
  */
-public class SplitImageView extends ImageView {
+public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     private int mRows; //行
     private int mColumns; //列
@@ -28,6 +28,8 @@ public class SplitImageView extends ImageView {
     private List<Position> positions;
 
     private boolean mEnableMultiSelect ;
+
+    private RectF mSelectRect;
 
     public SplitImageView(Context context) {
         super(context);
@@ -42,6 +44,7 @@ public class SplitImageView extends ImageView {
     public SplitImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
+
     }
 
     private void init() {
@@ -52,6 +55,7 @@ public class SplitImageView extends ImageView {
         mPaint.setStrokeWidth(10);
         mPaint.setStyle(Paint.Style.STROKE);
         positions = new ArrayList<Position>();
+        setOnTouchListener(this);
 
     }
 
@@ -61,28 +65,42 @@ public class SplitImageView extends ImageView {
      * @param rows    行数
      * @param columns 列数
      */
-    public void setDivideBlocks(int rows, int columns) {
+    public void setDivideBlocks(final int rows, final int columns) {
 
-        mRows = rows;
-        mColumns = columns;
+        final ViewTreeObserver observer= getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
 
-        mWidthStep = (float) getWidth() / columns;
-        mHeightStep = (float) getHeight() / rows;
+                mRows = rows;
+                mColumns = columns;
 
-        //获得每个区块的坐标位置
-        for(int row = 0 ; row < rows; row++){
+                mWidthStep = (float) getWidth() / columns;
+                mHeightStep = (float) getHeight() / rows;
 
-            for(int column =0 ; column < columns; column++){
+                //获得每个区块的坐标位置
+                for(int row = 0 ; row < rows; row++){
 
-                //得到坐标
+                    for(int column =0 ; column < columns; column++){
 
-                Position position = new Position();
-                Point point = new Point(row,column);
+                        //计算得到坐标
+                        Position position = new Position();
+                        Point point = new Point(row,column);
+                        position.setmPoint(point);
+                        RectF rectF = new RectF();
+                        rectF.left = column * mWidthStep;
+                        rectF.top = row * mHeightStep;
+                        rectF.right = rectF.left + mWidthStep;
+                        rectF.bottom = rectF.top + mHeightStep;
+                        position.setmRect(rectF);
+                        positions.add(position);
+                    }
 
+                }
 
+            //    getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
-
-        }
+        });
 
 
     }
@@ -95,8 +113,11 @@ public class SplitImageView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawText("hello", 100, 100, mPaint);
-        canvas.drawRect(100, 100, 200, 200, mPaint);
+      //  canvas.drawText("hello", 100, 100, mPaint);
+     //   canvas.drawRect(100, 100, 200, 200, mPaint);
+        if(mSelectRect != null){
+            canvas.drawRect(mSelectRect,mPaint);
+        }
 
     }
 
@@ -104,7 +125,29 @@ public class SplitImageView extends ImageView {
         if (mRows == 0 || mColumns == 0) {
             throw new IllegalStateException("You must set rows and colums");
         }
+    }
 
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        float x = event.getX();
+        float y = event.getY();
+
+        for(Position position:positions){
+           if(position.getmRect().contains(x,y)){
+               //找到图片中的点
+               position.setSelected(true);
+               mSelectRect = position.getmRect();
+
+           }else{
+
+               position.setSelected(false);
+           }
+        }
+
+
+        invalidate();
+        return false;
     }
 }
