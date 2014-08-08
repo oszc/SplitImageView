@@ -42,4 +42,13 @@ public class Position {
     public void setmRect(RectF mRect) {
         this.mRect = mRect;
     }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "mPoint=" + mPoint +
+                ", mRect=" + mRect +
+                ", selected=" + selected +
+                '}';
+    }
 }

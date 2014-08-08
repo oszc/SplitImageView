@@ -5,6 +5,7 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -19,6 +20,10 @@ import java.util.List;
  */
 public class SplitImageView extends ImageView implements View.OnTouchListener {
 
+    public int ALPHA = 55;
+    public int RED = 0;
+    public int GREEN = 255;
+    public int BLUE = 0;
     private int mRows; //行
     private int mColumns; //列
 
@@ -27,9 +32,10 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private float mHeightStep;//每行高度
     private List<Position> positions;
 
-    private boolean mEnableMultiSelect ;
+    private boolean mEnableMultiSelect;
 
     private RectF mSelectRect;
+
 
     public SplitImageView(Context context) {
         super(context);
@@ -50,10 +56,10 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private void init() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.BLACK);
-        mPaint.setTextSize(100);
+        mPaint.setColor(Color.argb(ALPHA, RED, GREEN, BLUE));
         mPaint.setStrokeWidth(10);
-        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.FILL);
+
         positions = new ArrayList<Position>();
         setOnTouchListener(this);
 
@@ -67,63 +73,52 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
      */
     public void setDivideBlocks(final int rows, final int columns) {
 
-        final ViewTreeObserver observer= getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-                mRows = rows;
-                mColumns = columns;
-
-                mWidthStep = (float) getWidth() / columns;
-                mHeightStep = (float) getHeight() / rows;
-
-                //获得每个区块的坐标位置
-                for(int row = 0 ; row < rows; row++){
-
-                    for(int column =0 ; column < columns; column++){
-
-                        //计算得到坐标
-                        Position position = new Position();
-                        Point point = new Point(row,column);
-                        position.setmPoint(point);
-                        RectF rectF = new RectF();
-                        rectF.left = column * mWidthStep;
-                        rectF.top = row * mHeightStep;
-                        rectF.right = rectF.left + mWidthStep;
-                        rectF.bottom = rectF.top + mHeightStep;
-                        position.setmRect(rectF);
-                        positions.add(position);
-                    }
-
-                }
-
-            //    getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            }
-        });
-
-
-    }
-
-    public void drawBlock() {
+        if(rows<=0 || columns <= 0){
+            throw new IllegalStateException("rows and columns must greater than 0");
+        }
+        mRows = rows;
+        mColumns = columns;
 
 
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-      //  canvas.drawText("hello", 100, 100, mPaint);
-     //   canvas.drawRect(100, 100, 200, 200, mPaint);
-        if(mSelectRect != null){
-            canvas.drawRect(mSelectRect,mPaint);
-        }
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
 
+        if (mColumns == 0 || mRows == 0) {
+            throw new IllegalStateException("You must specify rows and columns!!!");
+        }
+        mWidthStep = (float) w / mColumns;
+        mHeightStep = (float) h / mRows;
+
+        //获得每个区块的坐标位置
+        for (int row = 0; row < mRows; row++) {
+
+            for (int column = 0; column < mColumns; column++) {
+
+                //计算得到坐标
+                Position position = new Position();
+                Point point = new Point(row, column);
+                position.setmPoint(point);
+                RectF rectF = new RectF();
+                rectF.left = column * mWidthStep;
+                rectF.top = row * mHeightStep;
+                rectF.right = rectF.left + mWidthStep;
+                rectF.bottom = rectF.top + mHeightStep;
+                position.setmRect(rectF);
+                positions.add(position);
+            }
+
+        }
     }
 
-    private void calculateTouchedBlock() {
-        if (mRows == 0 || mColumns == 0) {
-            throw new IllegalStateException("You must set rows and colums");
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (mSelectRect != null) {
+            canvas.drawRect(mSelectRect, mPaint);
         }
     }
 
@@ -134,19 +129,15 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         float x = event.getX();
         float y = event.getY();
 
-        for(Position position:positions){
-           if(position.getmRect().contains(x,y)){
-               //找到图片中的点
-               position.setSelected(true);
-               mSelectRect = position.getmRect();
-
-           }else{
-
-               position.setSelected(false);
-           }
+        for (Position position : positions) {
+            if (position.getmRect().contains(x, y)) {
+                //找到图片中的点
+                position.setSelected(true);
+                mSelectRect = position.getmRect();
+            } else {
+                position.setSelected(false);
+            }
         }
-
-
         invalidate();
         return false;
     }

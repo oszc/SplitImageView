@@ -10,9 +10,9 @@
             android:id="@+id/image"
             android:src="@drawable/we"
             android:layout_centerInParent="true"
-            android:scaleType="fitXY"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:scaleType="matrix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
 
     <TextView
