@@ -12,8 +12,6 @@ public class MyActivity extends Activity {
     private static final String TAG = "MyActivity";
     @InjectView(R.id.image)
     SplitImageView mImage;
-    @InjectView(R.id.text)
-    TextView mText;
 
     /**
      * Called when the activity is first created.
