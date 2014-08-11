@@ -1,6 +1,7 @@
 package com.zc.SplitImageView;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MyActivity extends Activity {
@@ -28,6 +30,11 @@ public class MyActivity extends Activity {
         mImage.setDivideNum(3, 4);
         mImage.setEnableMultiSelect(true);
         mImage.setBlockMax(8);
+        Point point = new Point();
+        point.x = 0;
+        point.y = 1;
+        List<Point> points = Arrays.asList(point);
+        mImage.setBlockMark(points);
         //    mImage.setBlockColor(11,22,33,44);
 
         mImage.setBlockSelectedListener(new SplitImageView.OnBlockSelectListener() {
