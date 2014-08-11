@@ -19,7 +19,7 @@ public class MyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_layout_one);
         ButterKnife.inject(this);
-        mImage.setBlocksNum(3, 4);
+        mImage.setDivideNum(3, 4);
         mImage.setEnableMultiSelect(true);
         mImage.setBlockMax(8);
 

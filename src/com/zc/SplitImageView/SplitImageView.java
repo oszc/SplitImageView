@@ -212,7 +212,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
      * @param rows    行数
      * @param columns 列数
      */
-    public void setBlocksNum(final int rows, final int columns) {
+    public void setDivideNum(final int rows, final int columns) {
 
         if (rows <= 0 || columns <= 0) {
             throw new IllegalStateException("rows and columns must greater than 0");
@@ -229,11 +229,30 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         this.mEnableMultiSelect = enableMultiSelect;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getToast() {
         return mToast;
     }
 
+    /**
+     * 设置提示
+     * @param mToast
+     */
     public void setToast(String mToast) {
         this.mToast = mToast;
+    }
+
+    /**
+     * 设置区块颜色
+     * @param a
+     * @param r
+     * @param g
+     * @param b
+     */
+    public void setBlockColor(int a,int r,int g ,int b){
+        mPaint.setColor(Color.argb(a, r, g, b));
     }
 }
