@@ -2,12 +2,12 @@ package com.zc.SplitImageView;
 
 import android.content.Context;
 import android.graphics.*;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewDebug;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,30 +30,36 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private Paint mPaint;
     private float mWidthStep;//每列宽度
     private float mHeightStep;//每行高度
-    private List<Position> positions;
+    private List<Position> positions; //区块信息
+    private int mBlockMax = -1; //最多选中区块
 
-    private boolean mEnableMultiSelect;
+    private boolean mEnableMultiSelect = false;//允许多重选择
 
-    private RectF mSelectRect;
+    private String mToast = "";//提示信息
+
+    private Context mContext;
+
+    //   private RectF mSelectRect;//当前选中的区块
 
 
     public SplitImageView(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public SplitImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public SplitImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
+        init(context);
 
     }
 
-    private void init() {
+    private void init(Context context) {
+        mContext = context;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setColor(Color.argb(ALPHA, RED, GREEN, BLUE));
@@ -62,23 +68,6 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
         positions = new ArrayList<Position>();
         setOnTouchListener(this);
-
-    }
-
-    /**
-     * 设置需要划分的行列总数
-     *
-     * @param rows    行数
-     * @param columns 列数
-     */
-    public void setDivideBlocks(final int rows, final int columns) {
-
-        if(rows<=0 || columns <= 0){
-            throw new IllegalStateException("rows and columns must greater than 0");
-        }
-        mRows = rows;
-        mColumns = columns;
-
 
     }
 
@@ -117,8 +106,18 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        /*
         if (mSelectRect != null) {
             canvas.drawRect(mSelectRect, mPaint);
+        }*/
+
+        if (positions != null) {
+            for (Position position : positions) {
+
+                if (position.isSelected()) {
+                    canvas.drawRect(position.getmRect(), mPaint);
+                }
+            }
         }
     }
 
@@ -126,19 +125,115 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
-        float x = event.getX();
-        float y = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
 
-        for (Position position : positions) {
-            if (position.getmRect().contains(x, y)) {
-                //找到图片中的点
-                position.setSelected(true);
-                mSelectRect = position.getmRect();
-            } else {
-                position.setSelected(false);
+                float x = event.getX();
+                float y = event.getY();
+
+
+                if (positions != null && mEnableMultiSelect) {
+                    //支持多选
+                    for (Position position : positions) {
+                        if (position.getmRect().contains(x, y)) {
+                            //找到图片中的点
+                            position.setSelected(!position.isSelected());
+
+                            if (mBlockMax != -1 && getSelectedNum() > mBlockMax) {
+
+                                Toast.makeText(mContext, TextUtils.isEmpty(mToast) ? "最多可选择" + mBlockMax + "块区域" : mToast, Toast.LENGTH_SHORT).show();
+                                position.setSelected(false);
+                                return false;
+                            }
+                        }
+                    }
+                }else {
+                    //只支持单选
+                    for(Position p:positions){
+                        if(p.getmRect().contains(x,y)){
+                            p.setSelected(true);
+                        }else{
+                            p.setSelected(false);
+                        }
+                    }
+                }
+                invalidate();
+                break;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * 获得区块数
+     *
+     * @return
+     */
+    public int getBlockMax() {
+        return mBlockMax;
+    }
+
+    /**
+     * 设置最大选中区块数
+     *
+     * @param blockMax
+     */
+    public void setBlockMax(int blockMax) {
+        if (blockMax > mColumns * mRows) {
+            throw new IllegalArgumentException("max block must less than total block");
+        }
+        if (blockMax <= 0) {
+            throw new IllegalArgumentException("max block num must greater than 0");
+        }
+        this.mBlockMax = blockMax;
+    }
+
+    /**
+     * 获得用户选择区块的总数
+     *
+     * @return
+     */
+    private int getSelectedNum() {
+        int count = 0;
+        if (positions != null) {
+            for (Position position : positions) {
+                if (position.isSelected()) {
+                    count++;
+                }
             }
         }
-        invalidate();
-        return false;
+        return count;
+    }
+
+    /**
+     * 设置需要划分的行列总数
+     *
+     * @param rows    行数
+     * @param columns 列数
+     */
+    public void setBlocksNum(final int rows, final int columns) {
+
+        if (rows <= 0 || columns <= 0) {
+            throw new IllegalStateException("rows and columns must greater than 0");
+        }
+        mRows = rows;
+        mColumns = columns;
+    }
+
+    public boolean isEnableMultiSelect() {
+        return mEnableMultiSelect;
+    }
+
+    public void setEnableMultiSelect(boolean enableMultiSelect) {
+        this.mEnableMultiSelect = enableMultiSelect;
+    }
+
+    public String getToast() {
+        return mToast;
+    }
+
+    public void setToast(String mToast) {
+        this.mToast = mToast;
     }
 }

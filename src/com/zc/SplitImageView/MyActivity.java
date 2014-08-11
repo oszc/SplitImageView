@@ -2,8 +2,6 @@ package com.zc.SplitImageView;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -21,8 +19,9 @@ public class MyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_layout_one);
         ButterKnife.inject(this);
-
-        mImage.setDivideBlocks(3,4);
+        mImage.setBlocksNum(3, 4);
+        mImage.setEnableMultiSelect(true);
+        mImage.setBlockMax(8);
 
     }
 }
