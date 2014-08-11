@@ -147,7 +147,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
                             }
                         }
                     }
-                }else {
+                }else if(positions!=null && !mEnableMultiSelect){
                     //只支持单选
                     for(Position p:positions){
                         if(p.getmRect().contains(x,y)){
@@ -168,7 +168,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     /**
      * 获得区块数
      *
-     * @return
+     * @return 最大选中区块
      */
     public int getBlockMax() {
         return mBlockMax;
@@ -177,7 +177,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     /**
      * 设置最大选中区块数
      *
-     * @param blockMax
+     * @param blockMax 最大选中区块
      */
     public void setBlockMax(int blockMax) {
         if (blockMax > mColumns * mRows) {
@@ -192,7 +192,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     /**
      * 获得用户选择区块的总数
      *
-     * @return
+     * @return int
      */
     private int getSelectedNum() {
         int count = 0;
@@ -231,7 +231,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     /**
      *
-     * @return
+     * @return String
      */
     public String getToast() {
         return mToast;
@@ -239,7 +239,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     /**
      * 设置提示
-     * @param mToast
+     * @param mToast String
      */
     public void setToast(String mToast) {
         this.mToast = mToast;
@@ -247,10 +247,10 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     /**
      * 设置区块颜色
-     * @param a
-     * @param r
-     * @param g
-     * @param b
+     * @param a int
+     * @param r int
+     * @param g int
+     * @param b int
      */
     public void setBlockColor(int a,int r,int g ,int b){
         mPaint.setColor(Color.argb(a, r, g, b));

@@ -6,9 +6,10 @@ SplitImageView
 
 API
 
-iv.setDivideNum(3, 4);
-iv.setEnableMultiSelect(true);
-iv.setBlockMax(8);
+iv.setDivideNum(3, 4); //设置行列
+iv.setEnableMultiSelect(true); //是否支持多选
+iv.setBlockMax(8); //多选区块数
+iv.setBlockColor(11,22,33,44);//设置区块颜色
 
 示例如下：
 

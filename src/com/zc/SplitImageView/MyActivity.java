@@ -22,6 +22,8 @@ public class MyActivity extends Activity {
         mImage.setDivideNum(3, 4);
         mImage.setEnableMultiSelect(true);
         mImage.setBlockMax(8);
+        mImage.setBlockColor(11,22,33,44);
+
 
     }
 }
