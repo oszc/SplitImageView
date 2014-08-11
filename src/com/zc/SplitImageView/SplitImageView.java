@@ -282,7 +282,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         return l;
     }
 
-    public void setBlockMark(final List<Point> points){
+    public void setInitialBlockMark(final List<Point> points){
 
         if(points==null || points.size()==0){
             return;
