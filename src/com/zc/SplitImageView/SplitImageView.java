@@ -20,6 +20,11 @@ import java.util.List;
  */
 public class SplitImageView extends ImageView implements View.OnTouchListener {
 
+    public interface OnBlockSelectListener{
+        void onSelected(List<Position> ps);
+    }
+
+
     public int ALPHA = 55;
     public int RED = 0;
     public int GREEN = 255;
@@ -40,7 +45,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private Context mContext;
 
     //   private RectF mSelectRect;//当前选中的区块
-
+    private OnBlockSelectListener mListener;
 
     public SplitImageView(Context context) {
         super(context);
@@ -106,10 +111,6 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        /*
-        if (mSelectRect != null) {
-            canvas.drawRect(mSelectRect, mPaint);
-        }*/
 
         if (positions != null) {
             for (Position position : positions) {
@@ -147,15 +148,18 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
                             }
                         }
                     }
-                }else if(positions!=null && !mEnableMultiSelect){
+                } else if (positions != null && !mEnableMultiSelect) {
                     //只支持单选
-                    for(Position p:positions){
-                        if(p.getmRect().contains(x,y)){
+                    for (Position p : positions) {
+                        if (p.getmRect().contains(x, y)) {
                             p.setSelected(true);
-                        }else{
+                        } else {
                             p.setSelected(false);
                         }
                     }
+                }
+                if(mListener!=null){
+                    mListener.onSelected(getSelectedBlocks());
                 }
                 invalidate();
                 break;
@@ -230,7 +234,6 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     }
 
     /**
-     *
      * @return String
      */
     public String getToast() {
@@ -239,6 +242,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     /**
      * 设置提示
+     *
      * @param mToast String
      */
     public void setToast(String mToast) {
@@ -247,12 +251,34 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     /**
      * 设置区块颜色
+     *
      * @param a int
      * @param r int
      * @param g int
      * @param b int
      */
-    public void setBlockColor(int a,int r,int g ,int b){
+    public void setBlockColor(int a, int r, int g, int b) {
         mPaint.setColor(Color.argb(a, r, g, b));
+    }
+
+
+    public void setBlockSelectedListener(OnBlockSelectListener mListener) {
+        this.mListener = mListener;
+    }
+
+    /**
+     * 获得选中区块
+     * @return list
+     */
+    public List<Position> getSelectedBlocks() {
+        List<Position> l = new ArrayList<Position>();
+        if (positions != null) {
+            for (Position p : positions) {
+                if (p.isSelected()) {
+                    l.add(p);
+                }
+            }
+        }
+        return l;
     }
 }
