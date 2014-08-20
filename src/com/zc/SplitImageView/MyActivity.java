@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -27,7 +25,7 @@ public class MyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_layout_one);
         ButterKnife.inject(this);
-        mImage.setDivideNum(3, 4);
+        mImage.setDivideNum(10, 10);
         mImage.setEnableMultiSelect(true);
         mImage.setBlockMax(8);
         Point point = new Point();
@@ -35,14 +33,10 @@ public class MyActivity extends Activity {
         point.y = 1;
         List<Point> points = Arrays.asList(point);
         mImage.setInitialBlockMark(points);
-        mImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MyActivity.this,"Hello World",Toast.LENGTH_SHORT).show();
-            }
-        });
+        mImage.setBlockColor(102,0,255,0);
+        mImage.setEnableMultiSelect(false);
+        mImage.setMode(SplitImageView.MODE.SHORT_CLICK_TO_DRAW);
         //    mImage.setBlockColor(11,22,33,44);
-
         mImage.setBlockSelectedListener(new SplitImageView.OnBlockSelectListener() {
             @Override
             public void onSelected(List<Position> ps) {
@@ -50,6 +44,12 @@ public class MyActivity extends Activity {
                     Log.e(TAG,p.getmPoint()+"");
                 }
 
+            }
+        });
+        mImage.setmOnSingleTapListener(new SplitImageView.OnTapListener() {
+            @Override
+            public void onSingleTap() {
+                Toast.makeText(MyActivity.this,"Hello World",Toast.LENGTH_SHORT).show();
             }
         });
 

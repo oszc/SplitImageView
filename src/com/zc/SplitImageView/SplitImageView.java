@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.*;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,27 +18,40 @@ import java.util.List;
  * 8/8/14  1:20 PM
  * Created by JustinZhang.
  * 点击后显示区块
- * 可单选 可多选
+ * 长按，可单选 可多选 触发 OnBlockSelectListener
+ * 点击可以触发 OnSingleTapListener
  */
-public class SplitImageView extends ImageView implements View.OnTouchListener {
+public class SplitImageView extends TouchImageView implements View.OnTouchListener {
 
-    public interface OnBlockSelectListener{
+    private static final String TAG = "SplitImageView";
+
+    public enum MODE {
+        LONG_CLICK_TO_DRAW, SHORT_CLICK_TO_DRAW;
+    }
+
+    public interface OnBlockSelectListener {
         void onSelected(List<Position> ps);
     }
 
+    public interface OnTapListener {
+        void onSingleTap();
+    }
 
-    public int ALPHA = 55;
-    public int RED = 0;
+    public int ALPHA = 102;
+    public int RED = 255;
     public int GREEN = 255;
-    public int BLUE = 0;
+    public int BLUE = 255;
     private int mRows; //行
     private int mColumns; //列
 
-    private Paint mPaint;
+    private Paint mSelectPaint;
+    private Paint mDividePaint;//边框画笔
     private float mWidthStep;//每列宽度
     private float mHeightStep;//每行高度
     private List<Position> positions; //区块信息
     private int mBlockMax = -1; //最多选中区块
+
+    private MODE mode = MODE.SHORT_CLICK_TO_DRAW;
 
     private boolean mEnableMultiSelect = false;//允许多重选择
 
@@ -46,8 +60,11 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private Context mContext;
     private GestureDetector mGestureDetector;
 
+    private boolean showDivider = true;
+
     //   private RectF mSelectRect;//当前选中的区块
-    private OnBlockSelectListener mListener;
+    private OnBlockSelectListener mOnBlockSelectListener;
+    private OnTapListener mOnSingleTapListener;
 
     public SplitImageView(Context context) {
         super(context);
@@ -67,11 +84,17 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
 
     private void init(Context context) {
         mContext = context;
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.argb(ALPHA, RED, GREEN, BLUE));
-        mPaint.setStrokeWidth(10);
-        mPaint.setStyle(Paint.Style.FILL);
+        mSelectPaint = new Paint();
+        mSelectPaint.setAntiAlias(true);
+        mSelectPaint.setColor(Color.argb(ALPHA, RED, GREEN, BLUE));
+        mSelectPaint.setStrokeWidth(10);
+        mSelectPaint.setStyle(Paint.Style.FILL);
+
+        mDividePaint = new Paint();
+        mDividePaint.setAntiAlias(true);
+        mDividePaint.setColor(Color.argb(ALPHA, RED, GREEN, BLUE));
+        mDividePaint.setStrokeWidth(2);
+        mDividePaint.setStyle(Paint.Style.STROKE);
 
         positions = new ArrayList<Position>();
 
@@ -79,21 +102,58 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         setOnTouchListener(this);
 
     }
-    GestureDetector.SimpleOnGestureListener mSimpleGuestureListener =new GestureDetector.SimpleOnGestureListener(){
+
+    GestureDetector.SimpleOnGestureListener mSimpleGuestureListener = new GestureDetector.SimpleOnGestureListener() {
 
         @Override
         public void onLongPress(MotionEvent e) {
             super.onLongPress(e);
-            drawBlock(e);
+            longClickBehavior(e);
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            shortClickBehavior(e);
+            return true;
         }
     };
+
+    /**
+     * 根据模式定义长按行为
+     *
+     * @param e
+     */
+    private void longClickBehavior(MotionEvent e) {
+        if (mode == MODE.LONG_CLICK_TO_DRAW) {
+            drawBlock(e);
+        } else {
+            if (mOnSingleTapListener != null) {
+                mOnSingleTapListener.onSingleTap();
+            }
+        }
+    }
+
+    /**
+     * 根据模式定义短按行为
+     *
+     * @param e
+     */
+    private void shortClickBehavior(MotionEvent e) {
+        if (mode == MODE.SHORT_CLICK_TO_DRAW) {
+            drawBlock(e);
+        } else {
+            if (mOnSingleTapListener != null) {
+                mOnSingleTapListener.onSingleTap();
+            }
+        }
+    }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
         if (mColumns == 0 || mRows == 0) {
-         //   throw new IllegalStateException("You must specify rows and columns!!!");
+            //   throw new IllegalStateException("You must specify rows and columns!!!");
             return;
         }
         positions.clear();
@@ -121,39 +181,47 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         }
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         if (positions != null) {
             for (Position position : positions) {
 
+                RectF curRect = scaleRect(position.getmRect(), getCurrentZoom(), m[Matrix.MTRANS_X], m[Matrix.MTRANS_Y]);
+                //   position.setmRect(curRect);
                 if (position.isSelected()) {
-                    canvas.drawRect(position.getmRect(), mPaint);
+                    canvas.save();
+                    canvas.translate(m[Matrix.MTRANS_X], m[Matrix.MTRANS_Y]);
+                    canvas.drawRect(curRect, mSelectPaint);
+                    canvas.restore();
                 }
+
+                if (isShowDivider()) {
+                    canvas.save();
+                    canvas.translate(m[Matrix.MTRANS_X], m[Matrix.MTRANS_Y]);
+                    canvas.drawRect(curRect, mDividePaint);
+                    canvas.restore();
+                }
+
             }
         }
+
+    }
+
+    public RectF scaleRect(RectF rect, float scale, float x, float y) {
+        RectF r = new RectF();
+        r.set(rect.left * scale,
+                rect.top * scale,
+                rect.right * scale,
+                rect.bottom * scale);
+        return r;
     }
 
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-
-
-
-        if(mGestureDetector.onTouchEvent(event)){
-            return true;
-        }
-        /*
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-
-                if (drawBlock(event)) return false;
-                break;
-        }*/
-
-        return false;
+        mGestureDetector.onTouchEvent(event);
+        return true;
     }
 
     private boolean drawBlock(MotionEvent event) {
@@ -164,7 +232,8 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         if (positions != null && mEnableMultiSelect) {
             //支持多选
             for (Position position : positions) {
-                if (position.getmRect().contains(x, y)) {
+                PointF imgPoint = transformCoordTouchToBitmap(x, y, false);
+                if (position.getmRect().contains(imgPoint.x, imgPoint.y)) {
                     //找到图片中的点
                     position.setSelected(!position.isSelected());
 
@@ -179,20 +248,28 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         } else if (positions != null && !mEnableMultiSelect) {
             //只支持单选
             for (Position p : positions) {
-                if (p.getmRect().contains(x, y)) {
+                PointF imgPoint = transformCoordTouchToBitmap(x, y, false);
+                if (p.getmRect().contains(imgPoint.x, imgPoint.y)) {
                     p.setSelected(true);
                 } else {
                     p.setSelected(false);
                 }
             }
         }
-        if(mListener!=null){
-            mListener.onSelected(getSelectedBlocks());
+        if (mOnBlockSelectListener != null) {
+            mOnBlockSelectListener.onSelected(getSelectedBlocks());
         }
         invalidate();
         return false;
     }
 
+    public MODE getMode() {
+        return mode;
+    }
+
+    public void setMode(MODE mode) {
+        this.mode = mode;
+    }
 
     /**
      * 获得区块数
@@ -258,6 +335,14 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         this.mEnableMultiSelect = enableMultiSelect;
     }
 
+    public boolean isShowDivider() {
+        return showDivider;
+    }
+
+    public void setShowDivider(boolean showDivider) {
+        this.showDivider = showDivider;
+    }
+
     /**
      * @return String
      */
@@ -283,16 +368,20 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
      * @param b int
      */
     public void setBlockColor(int a, int r, int g, int b) {
-        mPaint.setColor(Color.argb(a, r, g, b));
+        mSelectPaint.setColor(Color.argb(a, r, g, b));
     }
 
-
     public void setBlockSelectedListener(OnBlockSelectListener mListener) {
-        this.mListener = mListener;
+        this.mOnBlockSelectListener = mListener;
+    }
+
+    public void setmOnSingleTapListener(OnTapListener mOnSingleTapListener) {
+        this.mOnSingleTapListener = mOnSingleTapListener;
     }
 
     /**
      * 获得选中区块
+     *
      * @return list
      */
     public List<Position> getSelectedBlocks() {
@@ -307,17 +396,22 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         return l;
     }
 
-    public void setInitialBlockMark(final List<Point> points){
+    /**
+     * 设置初始选中的点
+     *
+     * @param points List
+     */
+    public void setInitialBlockMark(final List<Point> points) {
 
-        if(points==null || points.size()==0){
+        if (points == null || points.size() == 0) {
             return;
         }
         post(new Runnable() {
             @Override
             public void run() {
-                for(Point point:points){
-                    for(Position position:positions){
-                        if(point.equals(position.getmPoint())){
+                for (Point point : points) {
+                    for (Position position : positions) {
+                        if (point.equals(position.getmPoint())) {
                             position.setSelected(true);
                         }
                     }
