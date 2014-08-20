@@ -30,7 +30,7 @@ public class MyActivity extends Activity {
         mSplitImageView.setBlockMax(8);
         mSplitImageView.setBlockColor(102, 0, 255, 0);
         mSplitImageView.setMode(SplitImageView.MODE.SHORT_CLICK_TO_DRAW);
-        mSplitImageView.setShowDivider(false);
+        mSplitImageView.setShowDivider(true);
         Point point = new Point();
         point.x = 0;
         point.y = 1;
@@ -43,7 +43,6 @@ public class MyActivity extends Activity {
                 for (Position p : ps) {
                     Log.e(TAG, p.getmPoint() + "");
                 }
-
             }
         });
         mSplitImageView.setmOnSingleTapListener(new SplitImageView.OnTapListener() {
