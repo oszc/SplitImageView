@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -26,7 +27,6 @@ public class MyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_layout_one);
         ButterKnife.inject(this);
-        ButterKnife.inject(this);
         mImage.setDivideNum(3, 4);
         mImage.setEnableMultiSelect(true);
         mImage.setBlockMax(8);
@@ -34,7 +34,13 @@ public class MyActivity extends Activity {
         point.x = 0;
         point.y = 1;
         List<Point> points = Arrays.asList(point);
-        mImage.setBlockMark(points);
+        mImage.setInitialBlockMark(points);
+        mImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MyActivity.this,"Hello World",Toast.LENGTH_SHORT).show();
+            }
+        });
         //    mImage.setBlockColor(11,22,33,44);
 
         mImage.setBlockSelectedListener(new SplitImageView.OnBlockSelectListener() {
@@ -46,6 +52,7 @@ public class MyActivity extends Activity {
 
             }
         });
+
 
     }
 }

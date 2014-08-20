@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.*;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -43,6 +44,7 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     private String mToast = "";//提示信息
 
     private Context mContext;
+    private GestureDetector mGestureDetector;
 
     //   private RectF mSelectRect;//当前选中的区块
     private OnBlockSelectListener mListener;
@@ -72,17 +74,29 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
         mPaint.setStyle(Paint.Style.FILL);
 
         positions = new ArrayList<Position>();
+
+        mGestureDetector = new GestureDetector(mSimpleGuestureListener);
         setOnTouchListener(this);
 
     }
+    GestureDetector.SimpleOnGestureListener mSimpleGuestureListener =new GestureDetector.SimpleOnGestureListener(){
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            super.onLongPress(e);
+            drawBlock(e);
+        }
+    };
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
         if (mColumns == 0 || mRows == 0) {
-            throw new IllegalStateException("You must specify rows and columns!!!");
+         //   throw new IllegalStateException("You must specify rows and columns!!!");
+            return;
         }
+        positions.clear();
         mWidthStep = (float) w / mColumns;
         mHeightStep = (float) h / mRows;
 
@@ -126,45 +140,56 @@ public class SplitImageView extends ImageView implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
+
+
+        if(mGestureDetector.onTouchEvent(event)){
+            return true;
+        }
+        /*
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
-                float x = event.getX();
-                float y = event.getY();
-
-
-                if (positions != null && mEnableMultiSelect) {
-                    //支持多选
-                    for (Position position : positions) {
-                        if (position.getmRect().contains(x, y)) {
-                            //找到图片中的点
-                            position.setSelected(!position.isSelected());
-
-                            if (mBlockMax != -1 && getSelectedNum() > mBlockMax) {
-
-                                Toast.makeText(mContext, TextUtils.isEmpty(mToast) ? "最多可选择" + mBlockMax + "块区域" : mToast, Toast.LENGTH_SHORT).show();
-                                position.setSelected(false);
-                                return false;
-                            }
-                        }
-                    }
-                } else if (positions != null && !mEnableMultiSelect) {
-                    //只支持单选
-                    for (Position p : positions) {
-                        if (p.getmRect().contains(x, y)) {
-                            p.setSelected(true);
-                        } else {
-                            p.setSelected(false);
-                        }
-                    }
-                }
-                if(mListener!=null){
-                    mListener.onSelected(getSelectedBlocks());
-                }
-                invalidate();
+                if (drawBlock(event)) return false;
                 break;
-        }
+        }*/
 
+        return false;
+    }
+
+    private boolean drawBlock(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+
+        if (positions != null && mEnableMultiSelect) {
+            //支持多选
+            for (Position position : positions) {
+                if (position.getmRect().contains(x, y)) {
+                    //找到图片中的点
+                    position.setSelected(!position.isSelected());
+
+                    if (mBlockMax != -1 && getSelectedNum() > mBlockMax) {
+
+                        Toast.makeText(mContext, TextUtils.isEmpty(mToast) ? "最多可选择" + mBlockMax + "块区域" : mToast, Toast.LENGTH_SHORT).show();
+                        position.setSelected(false);
+                        return true;
+                    }
+                }
+            }
+        } else if (positions != null && !mEnableMultiSelect) {
+            //只支持单选
+            for (Position p : positions) {
+                if (p.getmRect().contains(x, y)) {
+                    p.setSelected(true);
+                } else {
+                    p.setSelected(false);
+                }
+            }
+        }
+        if(mListener!=null){
+            mListener.onSelected(getSelectedBlocks());
+        }
+        invalidate();
         return false;
     }
 
