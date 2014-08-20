@@ -14,8 +14,8 @@ import java.util.List;
 public class MyActivity extends Activity {
 
     private static final String TAG = "MyActivity";
-    @InjectView(R.id.image)
-    SplitImageView mImage;
+    @InjectView(R.id.split_image_view)
+    SplitImageView mSplitImageView;
 
     /**
      * Called when the activity is first created.
@@ -25,31 +25,31 @@ public class MyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_layout_one);
         ButterKnife.inject(this);
-        mImage.setDivideNum(10, 10);
-        mImage.setEnableMultiSelect(true);
-        mImage.setBlockMax(8);
+        mSplitImageView.setDivideNum(10, 10);
+        mSplitImageView.setEnableMultiSelect(true);
+        mSplitImageView.setBlockMax(8);
+        mSplitImageView.setBlockColor(102, 0, 255, 0);
+        mSplitImageView.setMode(SplitImageView.MODE.SHORT_CLICK_TO_DRAW);
+        mSplitImageView.setShowDivider(false);
         Point point = new Point();
         point.x = 0;
         point.y = 1;
         List<Point> points = Arrays.asList(point);
-        mImage.setInitialBlockMark(points);
-        mImage.setBlockColor(102,0,255,0);
-        mImage.setEnableMultiSelect(false);
-        mImage.setMode(SplitImageView.MODE.SHORT_CLICK_TO_DRAW);
-        //    mImage.setBlockColor(11,22,33,44);
-        mImage.setBlockSelectedListener(new SplitImageView.OnBlockSelectListener() {
+        mSplitImageView.setInitialBlockMark(points);
+        //    mSplitImageView.setBlockColor(11,22,33,44);
+        mSplitImageView.setBlockSelectedListener(new SplitImageView.OnBlockSelectListener() {
             @Override
             public void onSelected(List<Position> ps) {
                 for (Position p : ps) {
-                    Log.e(TAG,p.getmPoint()+"");
+                    Log.e(TAG, p.getmPoint() + "");
                 }
 
             }
         });
-        mImage.setmOnSingleTapListener(new SplitImageView.OnTapListener() {
+        mSplitImageView.setmOnSingleTapListener(new SplitImageView.OnTapListener() {
             @Override
             public void onSingleTap() {
-                Toast.makeText(MyActivity.this,"Hello World",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MyActivity.this, "Hello World", Toast.LENGTH_SHORT).show();
             }
         });
 
