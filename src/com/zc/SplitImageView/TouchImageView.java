@@ -1069,7 +1069,7 @@ public class TouchImageView extends ImageView {
         	 finalX = Math.min(Math.max(finalX, 0), origW);
         	 finalY = Math.min(Math.max(finalY, 0), origH);
          }
-         
+
          return new PointF(finalX , finalY);
     }
     

@@ -19,11 +19,11 @@ import java.util.List;
  * Created by JustinZhang.
  * 点击后显示区块
  * 用户不应监听长按或点击效果，设置MODE与设置相应OnBlockSelectListener、OnTapListener监听代替
- *
  */
 public class SplitImageView extends TouchImageView implements View.OnTouchListener {
 
     private static final String TAG = "SplitImageView";
+
     /**
      * LONG_CLICK_TO_DRAW 模式 长按时候调用OnBlockSelectListener 短按时候调用 OnTapListener
      * SHORT_CLICK_TO_DRAW 模式（默认） 长按时候调用OnTapListener 短按时候调用OnBlockSelectListener
@@ -40,10 +40,7 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
         void onSingleTap();
     }
 
-    public int ALPHA = 102;
-    public int RED = 255;
-    public int GREEN = 255;
-    public int BLUE = 255;
+    public int ALPHA = 102, RED = 255, GREEN = 255, BLUE = 255; //默认颜色，灰白
     private int mRows; //行
     private int mColumns; //列
 
@@ -156,9 +153,34 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
         if (mColumns == 0 || mRows == 0) {
             return;
         }
+        calculateRect(w, h);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if(changed){
+            if (mColumns == 0 || mRows == 0) {
+                return;
+            }
+            calculateRect(right-left,bottom-top);
+        }
+    }
+
+    /**
+     *
+     * @param w View Width
+     * @param h View Height
+     */
+    private void calculateRect(float w, float h) {
+
+        if(w==0 || h == 0){
+            return;
+        }
+
         positions.clear();
-        mWidthStep = (float) w / mColumns;
-        mHeightStep = (float) h / mRows;
+        mWidthStep = w / mColumns;
+        mHeightStep = h / mRows;
 
         //获得每个区块的坐标位置
         for (int row = 0; row < mRows; row++) {
@@ -202,7 +224,8 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
 
     /**
      * 按比例缩放正方形
-     * @param rect RectF
+     *
+     * @param rect  RectF
      * @param scale float
      * @return RectF
      */
@@ -224,17 +247,19 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
 
     /**
      * 画实心框
+     *
      * @param event
      * @return
      */
     private boolean drawBlock(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
+        PointF imgPoint = transformCoordTouchToBitmap(x, y,false); //根据缩放比率将点击的坐标转化为图片上的坐标
 
+        Log.e(TAG,"oriX:"+x+ "   oriY:"+y+"   convert point: "+imgPoint +"   imageWidth:"+getImageWidth()+"   imageHeight:"+getImageHeight());
         if (positions != null && mEnableMultiSelect) {
             //支持多选
             for (Position position : positions) {
-                PointF imgPoint = transformCoordTouchToBitmap(x, y, false); //根据缩放比率将点击的坐标转化为图片上的坐标
                 if (position.getmRect().contains(imgPoint.x, imgPoint.y)) {
                     //找到图片中的点
                     position.setSelected(!position.isSelected());
@@ -248,7 +273,6 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
         } else if (positions != null && !mEnableMultiSelect) {
             //只支持单选
             for (Position p : positions) {
-                PointF imgPoint = transformCoordTouchToBitmap(x, y, false);
                 if (p.getmRect().contains(imgPoint.x, imgPoint.y)) {
                     p.setSelected(true);
                 } else {
@@ -325,6 +349,7 @@ public class SplitImageView extends TouchImageView implements View.OnTouchListen
         }
         mRows = rows;
         mColumns = columns;
+        calculateRect(getWidth(),getHeight());
     }
 
     public boolean isEnableMultiSelect() {

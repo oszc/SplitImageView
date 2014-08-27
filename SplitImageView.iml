@@ -16,6 +16,7 @@
     <orderEntry type="jdk" jdkName="Android API 18 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="butterknife-4.0.1" level="project" />
+    <orderEntry type="library" name="universal-image-loader-1.9.2" level="project" />
   </component>
 </module>
 
