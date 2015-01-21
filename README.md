@@ -28,5 +28,3 @@ mSplitImageView.setDivideNum(10, 10); <br/>
                 Toast.makeText(MyActivity.this, "Hello World", Toast.LENGTH_SHORT).show();<br/>
             }<br/>
         });<br/>
-示例如下：<br/>
-<img src='https://github.com/oszc/SplitImageView/blob/master/res/drawable/demo.png'/>
